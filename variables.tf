@@ -13,3 +13,13 @@ variable "resource_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "splunk_metrics_endpoint_accesstoken" {
+  description = "Access token for Splunk Observability Cloud"
+  default     = null
+}
+
+variable "splunk_metrics_endpoint_url" {
+  description = "Endpoint URL for Splunk Observability Cloud"
+  default     = "https://ingest.eu0.signalfx.com/v1/cloudwatch_metric_stream"
+}
