@@ -290,8 +290,6 @@ resource "aws_kinesis_firehose_delivery_stream" "env_splunk_metrics_delivery_str
   extended_s3_configuration {
     role_arn           = aws_iam_role.env_splunk_metrics_kinesis_service.arn
     bucket_arn         = aws_s3_bucket.env_splunk_metrics_record_backup.arn
-    buffer_size        = 5
-    buffer_interval    = 300
     compression_format = "GZIP"
 
     cloudwatch_logging_options {
