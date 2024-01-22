@@ -285,7 +285,21 @@ resource "aws_cloudwatch_log_group" "env_splunk_metrics_delivery_stream" {
 
 resource "aws_kinesis_firehose_delivery_stream" "env_splunk_metrics_delivery_stream" {
   name        = "${lower(local.env)}-splunk-metrics-delivery-stream"
-  destination = "http_endpoint"
+  destination = "extended_s3"
+
+  extended_s3_configuration {
+    role_arn           = aws_iam_role.env_splunk_metrics_kinesis_service.arn
+    bucket_arn         = aws_s3_bucket.env_splunk_metrics_record_backup.arn
+    buffer_size        = 5
+    buffer_interval    = 300
+    compression_format = "GZIP"
+
+    cloudwatch_logging_options {
+      enabled         = true
+      log_group_name  = "/aws/kinesisfirehose/${lower(local.env)}-splunk-metrics-delivery-stream"
+      log_stream_name = "HttpEndpointDelivery"
+    }
+  }
 
   http_endpoint_configuration {
     name               = "splunk_cloud_eu_metrics_endpoint"
@@ -299,20 +313,6 @@ resource "aws_kinesis_firehose_delivery_stream" "env_splunk_metrics_delivery_str
     request_configuration {
       content_encoding = "GZIP"
     }
-
-    cloudwatch_logging_options {
-      enabled         = true
-      log_group_name  = "/aws/kinesisfirehose/${lower(local.env)}-splunk-metrics-delivery-stream"
-      log_stream_name = "HttpEndpointDelivery"
-    }
-  }
-
-  s3_configuration {
-    role_arn           = aws_iam_role.env_splunk_metrics_kinesis_service.arn
-    bucket_arn         = aws_s3_bucket.env_splunk_metrics_record_backup.arn
-    buffer_size        = 5
-    buffer_interval    = 300
-    compression_format = "GZIP"
   }
 
   server_side_encryption {
