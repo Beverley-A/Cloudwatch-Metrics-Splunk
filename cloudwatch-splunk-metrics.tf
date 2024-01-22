@@ -271,16 +271,6 @@ resource "aws_s3_bucket_policy" "env_splunk_metrics_record_backup" {
 # ==================================================================================================
 # Kinesis Firehose Delivery Stream
 
-variable "splunk_metrics_endpoint_accesstoken" {
-  description = "Access token for Splunk Observability Cloud"
-  default     = null
-}
-
-variable "splunk_metrics_endpoint_url" {
-  description = "Endpoint URL for Splunk Observability Cloud"
-  default     = "https://ingest.eu0.signalfx.com/v1/cloudwatch_metric_stream"
-}
-
 resource "aws_cloudwatch_log_group" "env_splunk_metrics_delivery_stream" {
   name              = "/aws/kinesisfirehose/${lower(local.env)}-splunk-metrics-delivery-stream"
   retention_in_days = 30
@@ -296,14 +286,6 @@ resource "aws_cloudwatch_log_group" "env_splunk_metrics_delivery_stream" {
 resource "aws_kinesis_firehose_delivery_stream" "env_splunk_metrics_delivery_stream" {
   name        = "${lower(local.env)}-splunk-metrics-delivery-stream"
   destination = "http_endpoint"
-
-  s3_configuration {
-    role_arn           = aws_iam_role.env_splunk_metrics_kinesis_service.arn
-    bucket_arn         = aws_s3_bucket.env_splunk_metrics_record_backup.arn
-    buffer_size        = 5
-    buffer_interval    = 300
-    compression_format = "GZIP"
-  }
 
   http_endpoint_configuration {
     name               = "splunk_cloud_eu_metrics_endpoint"
@@ -323,6 +305,14 @@ resource "aws_kinesis_firehose_delivery_stream" "env_splunk_metrics_delivery_str
       log_group_name  = "/aws/kinesisfirehose/${lower(local.env)}-splunk-metrics-delivery-stream"
       log_stream_name = "HttpEndpointDelivery"
     }
+  }
+
+  s3_configuration {
+    role_arn           = aws_iam_role.env_splunk_metrics_kinesis_service.arn
+    bucket_arn         = aws_s3_bucket.env_splunk_metrics_record_backup.arn
+    buffer_size        = 5
+    buffer_interval    = 300
+    compression_format = "GZIP"
   }
 
   server_side_encryption {
